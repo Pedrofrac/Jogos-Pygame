@@ -2,6 +2,7 @@ import pygame
 import random
 import string
 import datetime
+import copy
 from config import *
 from assets import *
 from card import Carta
@@ -17,6 +18,7 @@ class Jogo:
     def __init__(self, dificuldade, seed_usuario=None):
         self.dificuldade = dificuldade
         self.start_time = pygame.time.get_ticks()
+        self.historico = [] # Pilha para armazenar estados (Undo)
         
         self.cartas_para_virar = 1 if dificuldade == 1 else 3
         self.visiveis_no_descarte = 0
@@ -56,6 +58,45 @@ class Jogo:
         self.vitoria = False
         self.relatorio_gerado = False
 
+    def salvar_estado(self):
+        """Salva o estado atual do jogo para permitir o Undo (Z)."""
+        # Criamos cópias profundas das listas de cartas para que o estado salvo
+        # não seja alterado quando movermos as cartas no jogo atual.
+        estado = {
+            'mesa': copy.deepcopy(self.pilhas_mesa),
+            'finais': copy.deepcopy(self.pilhas_finais),
+            'compra': copy.deepcopy(self.monte_compra),
+            'descarte': copy.deepcopy(self.monte_descarte),
+            'visiveis': self.visiveis_no_descarte,
+            'score': 0 # Se tivesse pontuação, salvaria aqui
+        }
+        self.historico.append(estado)
+        # Limita o histórico para não consumir memória infinita (opcional, ex: 50 jogadas)
+        if len(self.historico) > 50:
+            self.historico.pop(0)
+
+    def desfazer(self):
+        """Reverte para o último estado salvo."""
+        if not self.historico:
+            return
+
+        estado = self.historico.pop()
+        
+        # Restaura as listas
+        self.pilhas_mesa = estado['mesa']
+        self.pilhas_finais = estado['finais']
+        self.monte_compra = estado['compra']
+        self.monte_descarte = estado['descarte']
+        self.visiveis_no_descarte = estado['visiveis']
+        
+        # Limpa animações pendentes para evitar glitches visuais
+        self.fila_animacao_compra = []
+        self.cartas_colapsando = []
+        self.carta_selecionada = None
+        
+        # Reseta timers do coringa para ser justo
+        self.joker.reset_timer()
+
     def _criar_baralho(self):
         cartas = [Carta(v, n) for n in NAIPES for v in VALORES]
         random.shuffle(cartas)
@@ -85,7 +126,7 @@ class Jogo:
     def update_animacao_inicial(self):
         if not self.fila_animacao_inicial: return
         agora = pygame.time.get_ticks()
-        if agora - self.timer_distribuicao > 30: # Mais rápido também
+        if agora - self.timer_distribuicao > 30:
             c, dx, dy, virar = self.fila_animacao_inicial.pop(0)
             c.animar_para(dx, dy, velocidade=0.15)
             if virar: c.virada = True
@@ -93,22 +134,18 @@ class Jogo:
 
     def update_animacao_compra(self):
         if not self.fila_animacao_compra: return
-        
         agora = pygame.time.get_ticks()
-        # Delay reduzido para 80ms (bem mais rápido entre cartas)
         if agora - self.timer_animacao_compra > 80:
             c, dest_x, dest_y = self.fila_animacao_compra.pop(0)
             c.aguardando_animacao = False
             c.virada = True 
-            # Velocidade aumentada para 0.15 (Voo rápido)
-            c.animar_para(dest_x, dest_y, velocidade=0.15)
+            c.animar_para(dest_x, dest_y, velocidade=0.06)
             self.timer_animacao_compra = agora
 
     def update_colapso(self):
         for i in range(len(self.cartas_colapsando) - 1, -1, -1):
             c = self.cartas_colapsando[i]
             if not c.em_animacao:
-                c.virada = False 
                 self.cartas_colapsando.pop(i)
 
     def update_cartas(self):
@@ -142,6 +179,7 @@ class Jogo:
                 if p and p[-1] == carta: eh_topo = True; break
 
         if eh_topo and rect_f:
+            self.salvar_estado() # Salva antes de mover
             idx = NAIPES.index(carta.naipe)
             self.pilhas_finais[idx].append(carta)
             self._remover_da_origem_obj(carta)
@@ -182,6 +220,7 @@ class Jogo:
                     moveu = True
             
             if moveu:
+                self.salvar_estado() # Salva antes de mover
                 self._remover_grupo_da_origem(grupo_cartas)
                 for i, c in enumerate(grupo_cartas):
                     c.arrastando = False
@@ -252,37 +291,58 @@ class Jogo:
                     pos = evento.pos
                     agora = pygame.time.get_ticks()
 
-                    if pygame.Rect(10, ALTURA_TELA-35, 200, 30).collidepoint(pos):
+                    # --- BOTÃO COPIAR (Canto Inferior Direito) ---
+                    # LARGURA - LarguraBotao(80) - Margem(20) = LARGURA - 100
+                    btn_copiar_rect = pygame.Rect(LARGURA_TELA - 100, ALTURA_TELA - 32, 80, 26)
+                    
+                    if btn_copiar_rect.collidepoint(pos):
                         self.copiar_seed(); return
 
+                    # --- CLIQUE NO BARALHO (COMPRA) ---
                     if pygame.Rect(50, 50, LARGURA_CARTA, ALTURA_CARTA).collidepoint(pos):
+                        self.salvar_estado() # SALVA O ESTADO ANTES DE MUDAR
                         self.joker.reset_timer()
                         
                         if self.monte_compra:
-                            # --- COLAPSO ---
+                            # 1. Captura quem está visível AGORA
+                            cartas_visiveis_agora = []
                             if self.visiveis_no_descarte > 0 and self.monte_descarte:
-                                cartas_para_ocultar = self.monte_descarte[-self.visiveis_no_descarte:]
-                                self.cartas_colapsando = cartas_para_ocultar[:]
-                                for c_old in cartas_para_ocultar:
-                                    # Colapso super rápido (0.4)
-                                    c_old.animar_para(180, 50, velocidade=0.4)
+                                cartas_visiveis_agora = self.monte_descarte[-self.visiveis_no_descarte:]
 
-                            # --- COMPRA ---
-                            qtd = min(self.cartas_para_virar, len(self.monte_compra))
-                            tamanho_final = len(self.monte_descarte) + qtd
-                            self.visiveis_no_descarte = min(tamanho_final, 3)
-                            self.fila_animacao_compra = [] 
-                            
-                            # Delay reduzido para 100ms
-                            self.timer_animacao_compra = agora + 100
-                            
-                            for i in range(qtd):
+                            # 2. Realiza a compra lógica
+                            qtd_compra = min(self.cartas_para_virar, len(self.monte_compra))
+                            novas_cartas = []
+                            for _ in range(qtd_compra):
                                 c = self.monte_compra.pop()
                                 self.monte_descarte.append(c)
+                                novas_cartas.append(c)
+
+                            # 3. Define quem ficará visível no FUTURO
+                            total_no_descarte = len(self.monte_descarte)
+                            self.visiveis_no_descarte = min(total_no_descarte, 3)
+                            cartas_visiveis_futuro = self.monte_descarte[-self.visiveis_no_descarte:]
+                            
+                            # 4. Anima as cartas antigas (Shift para a esquerda)
+                            for c in cartas_visiveis_agora:
+                                if c in cartas_visiveis_futuro:
+                                    idx_novo = cartas_visiveis_futuro.index(c)
+                                    dest_x = 180 + (idx_novo * 25)
+                                    c.animar_para(dest_x, 50, velocidade=0.1)
+                                else:
+                                    # Vai para o fundo se saiu do leque
+                                    c.animar_para(180, 50, velocidade=0.1)
+
+                            # 5. Configura animação das novas cartas
+                            self.fila_animacao_compra = [] 
+                            self.timer_animacao_compra = agora + 50 
+                            
+                            for c in novas_cartas:
                                 c.set_pos(50, 50) 
                                 c.virada = False 
                                 c.aguardando_animacao = True
-                                dest_x = 180 + (i * 25)
+                                
+                                idx_novo = cartas_visiveis_futuro.index(c)
+                                dest_x = 180 + (idx_novo * 25)
                                 self.fila_animacao_compra.append((c, dest_x, 50))
 
                         else:
@@ -297,11 +357,15 @@ class Jogo:
                                 c.animar_para(50, 50, velocidade=0.2) 
                         return
 
+                    # --- SELEÇÃO DE CARTAS (Mesa, Descarte, Fundação) ---
                     carta_clicada = None; origem = None; idx = None
+                    
+                    # 1. Verifica Descarte
                     if self.monte_descarte and self.visiveis_no_descarte > 0:
                         topo = self.monte_descarte[-1]
                         if topo.rect.collidepoint(pos): carta_clicada = topo; origem = 'descarte'
                     
+                    # 2. Verifica Mesa
                     if not carta_clicada:
                         for i, p in enumerate(self.pilhas_mesa):
                             for j in range(len(p)-1, -1, -1):
@@ -309,20 +373,24 @@ class Jogo:
                                     carta_clicada = p[j]; origem = 'mesa'; idx = i; break
                             if carta_clicada: break
                     
+                    # 3. Verifica Fundações (para permitir tirar de lá)
                     if not carta_clicada:
                          for i, p in enumerate(self.pilhas_finais):
                             if p and p[-1].rect.collidepoint(pos):
                                 carta_clicada = p[-1]; origem = 'fundacao'; idx = i; break
 
                     if carta_clicada:
+                        # --- CLIQUE DUPLO ---
                         if CONFIG["clique_duplo"]:
                             if self.ultima_carta_clicada == carta_clicada and agora - self.ultimo_clique_time < 500:
+                                # A função tentar_movimento_automatico já chama salvar_estado se mover
                                 if self.tentar_movimento_automatico(carta_clicada):
                                     self.ultima_carta_clicada = None; self.update_posicoes_mesa(); return
 
                         self.ultima_carta_clicada = carta_clicada; self.ultimo_clique_time = agora
                         self.joker.reset_timer()
                         
+                        # Prepara o arrasto
                         if origem == 'mesa':
                             ic = self.pilhas_mesa[idx].index(carta_clicada)
                             self.carta_selecionada = self.pilhas_mesa[idx][ic:]
@@ -336,6 +404,7 @@ class Jogo:
 
             elif evento.type == pygame.MOUSEBUTTONUP:
                 if evento.button == 1 and self.carta_selecionada:
+                    # processar_drop salva o estado internamente se houver movimento
                     self._processar_drop()
                     self.carta_selecionada = None
                     self.update_posicoes_mesa()
@@ -348,9 +417,37 @@ class Jogo:
                     s = self.carta_selecionada[k]
                     s.set_pos(lider.rect.x, lider.rect.y + (k * OFFSET_Y_CARTA))
 
+            # --- UNDO (TECLA Z) ---
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_z:
+                    self.desfazer()
+
+            elif evento.type == pygame.MOUSEBUTTONUP:
+                if evento.button == 1 and self.carta_selecionada:
+                    # Tenta processar o drop. Se retornar True, significa que houve mudança, então o Undo já foi salvo dentro.
+                    # Mas a lógica aqui é complexa. Vamos salvar dentro de _processar_drop SE houver movimento.
+                    self._processar_drop()
+                    self.carta_selecionada = None
+                    self.update_posicoes_mesa()
+
+            elif evento.type == pygame.MOUSEMOTION and self.carta_selecionada:
+                pos = evento.pos
+                lider = self.carta_selecionada[0]
+                lider.set_pos(pos[0] + lider.offset_drag[0], pos[1] + lider.offset_drag[1])
+                for k in range(1, len(self.carta_selecionada)):
+                    s = self.carta_selecionada[k]
+                    s.set_pos(lider.rect.x, lider.rect.y + (k * OFFSET_Y_CARTA))
+
+            # --- UNDO COM TECLA Z ---
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_z:
+                    self.desfazer()
+
     def _processar_drop(self):
         cabeça = self.carta_selecionada[0]
         moveu = False
+        
+        # Lógica para Fundações
         if len(self.carta_selecionada) == 1:
             for i in range(4):
                 if cabeça.rect.colliderect(RegrasPaciencia.get_rect_fundacao(i)):
@@ -360,6 +457,7 @@ class Jogo:
                         if not pilha and cabeça.valor == 1: ok = True
                         elif pilha and cabeça.valor == pilha[-1].valor + 1 and pilha[-1] != cabeça: ok = True
                         if ok:
+                            self.salvar_estado() # SALVA ANTES DE CONCRETIZAR
                             self._remover_grupo_da_origem(self.carta_selecionada)
                             cabeça.arrastando = False
                             dest = RegrasPaciencia.get_rect_fundacao(i)
@@ -367,6 +465,7 @@ class Jogo:
                             pilha.append(cabeça); moveu = True
                     break
         
+        # Lógica para Mesa
         start_x = (LARGURA_TELA - (7 * (LARGURA_CARTA + ESPACO_CARTAS))) // 2
         if not moveu:
             for i in range(7):
@@ -387,6 +486,7 @@ class Jogo:
                             aceita = True
                             dest_x, dest_y = topo.rect.x, topo.rect.y + OFFSET_Y_CARTA
                 if aceita:
+                    self.salvar_estado() # SALVA ANTES DE CONCRETIZAR
                     self._remover_grupo_da_origem(self.carta_selecionada)
                     for k, c in enumerate(self.carta_selecionada): 
                         c.arrastando=False
@@ -394,6 +494,7 @@ class Jogo:
                         pilha_dest.append(c)
                     moveu = True; break
         
+        # Se não moveu, volta pra origem
         if not moveu:
              for c in self.carta_selecionada: 
                  c.arrastando = False

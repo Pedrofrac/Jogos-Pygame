@@ -17,7 +17,6 @@ class GameRenderer:
         self._desenhar_fundoes(jogo.pilhas_finais)
         self._desenhar_mesa(jogo.pilhas_mesa)
 
-        # Desenha cartas voando de volta pro monte (reciclagem)
         for c in jogo.monte_compra:
             if c.em_animacao:
                 c.desenhar(self.tela)
@@ -40,18 +39,9 @@ class GameRenderer:
         if not monte:
             pygame.draw.circle(self.tela, (0, 60, 0), (50 + LARGURA_CARTA//2, 50 + ALTURA_CARTA//2), 30, 2)
         else:
-            # --- CORREÇÃO DO TOPO ESTÁTICO ---
-            # Desenhamos primeiro as cartas de "fundo" (offset negativo)
-            # E por último a carta do topo cravada em (50, 50)
-            
             qtd = len(monte)
-            # Desenha até 2 cartas de fundo para dar volume
-            if qtd > 2:
-                self._desenhar_verso_generico(46, 46) # Fundo 2
-            if qtd > 1:
-                self._desenhar_verso_generico(48, 48) # Fundo 1
-            
-            # Desenha o topo SEMPRE na mesma posição
+            if qtd > 2: self._desenhar_verso_generico(46, 46) 
+            if qtd > 1: self._desenhar_verso_generico(48, 48) 
             self._desenhar_verso_generico(50, 50)
 
     def _desenhar_verso_generico(self, x, y):
@@ -64,39 +54,22 @@ class GameRenderer:
 
     def _desenhar_descarte(self, monte, limite_visivel):
         if not monte: return
-
-        # Índice onde começa o leque visível
-        # Se limite é 3, e temos 10 cartas, o leque começa no index 7 (10-3)
-        # Cartas 0 a 6 são "soterradas"
         idx_inicio_leque = len(monte) - limite_visivel
         if idx_inicio_leque < 0: idx_inicio_leque = 0
-        
         x_base = 180
-
-        # Percorre TODAS as cartas para garantir que as soterradas não sumam
         for i, c in enumerate(monte):
             em_espera = getattr(c, 'aguardando_animacao', False)
-            
             if em_espera:
-                # Se está esperando sair do baralho, desenha no monte
                 c.rect.topleft = (50, 50)
                 c.desenhar(self.tela)
-            
             elif c.em_animacao or c.arrastando:
-                # Se está voando, desenha onde estiver
                 c.desenhar(self.tela)
-            
             else:
-                # Se está parada no descarte
                 if i < idx_inicio_leque:
-                    # Carta soterrada/velha: Fica na base (180, 50)
-                    # O game.py já virou ela pra baixo (virada=False) no update_colapso
                     c.rect.topleft = (x_base, 50)
                 else:
-                    # Carta do leque atual
                     offset_leque = i - idx_inicio_leque
                     c.rect.topleft = (x_base + offset_leque*25, 50)
-                
                 c.desenhar(self.tela)
 
     def _desenhar_fundoes(self, pilhas):
@@ -109,6 +82,10 @@ class GameRenderer:
             self.tela.blit(t, t.get_rect(center=rect.center))
             
             if pilha:
+                # CORREÇÃO VISUAL: Se tiver mais de uma carta, desenha a penúltima
+                # para que quando a última estiver voando ou arrastando, a de baixo apareça.
+                if len(pilha) > 1:
+                    pilha[-2].desenhar(self.tela)
                 pilha[-1].desenhar(self.tela)
 
     def _desenhar_mesa(self, pilhas_mesa):
@@ -117,19 +94,44 @@ class GameRenderer:
                 c.desenhar(self.tela)
 
     def _desenhar_ui_inferior(self, jogo):
-        txt_seed = FONTE_PEQUENA.render(f"Seed: {jogo.seed}", True, COR_AMARELA)
-        self.tela.blit(txt_seed, (10, ALTURA_TELA - 35))
-        
-        btn_copy = pygame.Rect(10 + txt_seed.get_width() + 10, ALTURA_TELA - 35, 60, 20)
-        pygame.draw.rect(self.tela, COR_BOTAO, btn_copy, border_radius=3)
-        lbl_cpy = FONTE_PEQUENA.render("COPIAR", True, COR_BRANCA)
-        self.tela.blit(lbl_cpy, (btn_copy.x + 5, btn_copy.y + 2))
+        # --- LADO ESQUERDO: Comandos ---
+        txt_comandos = FONTE_PEQUENA.render("Z: Desfazer | R: Reiniciar", True, (200, 200, 200))
+        self.tela.blit(txt_comandos, (20, ALTURA_TELA - 30))
 
+        # --- LADO DIREITO: Seed e Botão Copiar ---
+        # 1. Definição do Botão (Fixo)
+        btn_largura = 80
+        btn_altura = 26
+        margem_direita = 20
+        y_pos = ALTURA_TELA - 32
+        
+        x_btn = LARGURA_TELA - btn_largura - margem_direita
+        rect_btn = pygame.Rect(x_btn, y_pos, btn_largura, btn_altura)
+        
+        # 2. Texto da Seed (à esquerda do botão)
+        txt_seed = FONTE_PEQUENA.render(f"Seed: {jogo.seed}", True, COR_AMARELA)
+        x_seed = x_btn - txt_seed.get_width() - 15 # 15px de espaço
+        self.tela.blit(txt_seed, (x_seed, y_pos + 4))
+
+        # 3. Desenhar o Botão
+        mouse_pos = pygame.mouse.get_pos()
+        hover = rect_btn.collidepoint(mouse_pos)
+        cor_bg = COR_BOTAO_HOVER if hover else COR_BOTAO
+        
+        pygame.draw.rect(self.tela, cor_bg, rect_btn, border_radius=5)
+        pygame.draw.rect(self.tela, COR_BRANCA, rect_btn, 1, border_radius=5)
+        
+        lbl_cpy = FONTE_PEQUENA.render("COPIAR", True, COR_BRANCA)
+        txt_rect = lbl_cpy.get_rect(center=rect_btn.center)
+        self.tela.blit(lbl_cpy, txt_rect)
+
+        # 4. Feedback de Cópia
         if jogo.feedback_copia:
             agora = pygame.time.get_ticks()
             if agora - jogo.feedback_timer < 2000:
                 txt_ok = FONTE_PEQUENA.render("COPIADO!", True, (0, 255, 0))
-                self.tela.blit(txt_ok, (btn_copy.right + 10, btn_copy.y + 2))
+                # Mostra acima do botão para não atrapalhar
+                self.tela.blit(txt_ok, (x_btn + 5, y_pos - 20))
             else:
                 jogo.feedback_copia = False
 
