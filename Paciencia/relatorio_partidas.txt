@@ -1,0 +1,129 @@
+--------------------------------------------------
+Data: 02/12/2025 02:21:12
+Seed: I7ZYSR
+Nivel Escolhido: 1
+Resultado: ABANDONO (Reiniciou)
+--------------------------------------------------
+
+--------------------------------------------------
+Data: 02/12/2025 02:21:18
+Seed: A2JT18
+Nivel Escolhido: 2
+Resultado: ABANDONO (Reiniciou)
+--------------------------------------------------
+
+--------------------------------------------------
+Data: 02/12/2025 02:21:48
+Seed: O5ZSK5
+Nivel Escolhido: 2
+Resultado: DERROTA - Coringa
+--------------------------------------------------
+
+--------------------------------------------------
+Data: 02/12/2025 02:33:44
+Seed: A
+Nivel Escolhido: 1
+Resultado: ABANDONO (Fechou Jogo)
+--------------------------------------------------
+
+--- RELATORIO ---
+Data: 02/12/2025 02:34:57
+Seed: A6U33U
+Nivel: 1
+Resultado: ABANDONO (Reiniciou)
+
+--- RELATORIO ---
+Data: 02/12/2025 02:35:38
+Seed: 4K5TX5
+Nivel: 2
+Resultado: DERROTA
+
+--- RELATORIO ---
+Data: 02/12/2025 02:41:21
+Seed: SLR98Q
+Nivel: 1
+Resultado: ABANDONO (Reiniciou)
+
+--- RELATORIO ---
+Data: 02/12/2025 02:41:25
+Seed: FYMSJB
+Nivel: 2
+Resultado: ABANDONO (Reiniciou)
+
+--- RELATORIO ---
+Data: 02/12/2025 02:41:53
+Seed: YH3EF9
+Nivel: 4
+Resultado: DERROTA
+
+--- RELATORIO ---
+Data: 02/12/2025 02:42:29
+Seed: ZS2QOP
+Nivel: 2
+Resultado: DERROTA
+
+--- RELATORIO ---
+Data: 02/12/2025 02:48:00
+Seed: FY1EBO
+Nivel: 1
+Resultado: ABANDONO (Fechou)
+
+Data: 02/12/2025 02:54:42 | Seed: Y20FCT | Nivel: 1 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 02:56:52 | Seed: JZ4U8P | Nivel: 1 | Res: ABANDONO (Reiniciou)
+
+
+Data: 02/12/2025 02:58:40 | Seed: I2VDGU | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 02:58:45 | Seed: SXXZPS | Nivel: 3 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:03:02 | Seed: SIQS80 | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:03:22 | Seed: NB9DIV | Nivel: 1 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 03:03:42 | Seed: ZHFLD9 | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:06:32 | Seed: OGWJ79 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 03:12:55 | Seed: 3ID4QA | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 03:13:16 | Seed: LK6IB6 | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:16:52 | Seed: 9T69AV | Nivel: 1 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 03:17:35 | Seed: MMEYE1 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:18:01 | Seed: 0FG5VS | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:29:57 | Seed: MJZXHE | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:30:38 | Seed: OKWM4F | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:31:16 | Seed: OKWMAF | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:31:19 | Seed: XO11SH | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:36:05 | Seed: OKWMAF | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 03:36:57 | Seed: AASCASC | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:41:37 | Seed: O3KC6Y | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:46:18 | Seed: U4O7UW | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 03:46:31 | Seed: 0KCJ8M | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:46:32 | Seed: B6SRT8 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 03:49:36 | Seed: CPG5ZY | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 03:54:16 | Seed: KHSWMG | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:01:16 | Seed: PTLVZQ | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:01:38 | Seed: 2NE9FP | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 04:01:42 | Seed: VF7CEL | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 04:06:16 | Seed: LQ54FV | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:09:53 | Seed: 99DAMB | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:12:41 | Seed: KN5K20 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:15:39 | Seed: 10W0U7 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:18:03 | Seed: NDN5HI | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 04:21:08 | Seed: OTK06J | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:26:21 | Seed: 3YKSJ3 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:35:09 | Seed: DU80DD | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:35:30 | Seed: O3DVTJ | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 04:39:58 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:46:38 | Seed: EB8W9S | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:51:20 | Seed: 3SOPUL | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 04:51:54 | Seed: O3DVTJ | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 04:52:07 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 04:56:06 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:59:18 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 04:59:33 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:05:17 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 05:05:31 | Seed: S6ETL9 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:05:35 | Seed: RQTFEK | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:10:59 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 05:11:08 | Seed: 6SR27B | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:13:34 | Seed: PKU041 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:15:08 | Seed: PVU6HP | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 05:18:06 | Seed: 0NGYPI | Nivel: 2 | Res: ABANDONO (Fechou)
+Data: 02/12/2025 05:18:30 | Seed: LUZYLL | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:18:32 | Seed: UURSST | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:19:13 | Seed: PVU6HP | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 02/12/2025 05:21:20 | Seed: LUZYLL | Nivel: 2 | Res: ABANDONO (Fechou)

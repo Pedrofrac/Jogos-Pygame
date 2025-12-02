@@ -1,0 +1,51 @@
+--------------------------------------------------
+Data: 02/12/2025 01:34:15
+Seed: SEUBQE
+Dificuldade: 4
+Resultado: DERROTA - Coringa
+--------------------------------------------------
+
+o relatorio deve ter partidas que apertou r ou fechou o jogo
+
+a interface é assim 
+
+facil (clikou aqui começa jogo)
+medio (clikou aqui começa jogo)
+dificil  (clikou vai pra dificil)
+configuração: (abilitar cliko duplo)
+
+Dificil:
+
+(niveil do 1 ao 5)
+
+
+ao clikar duas vezes fazer um movimento valido se existir tanto em cartas no baralho quando da mesa.
+
+e sempre deve aparer as ultimas 3 cartas escolhidas no baralho e o dificl n esta funcioando assim o baralho deve mostrar 3 cartas
+
+
+_____________________
+
+
+coisas que n estão certas ao tirar uma dfas cartas do grupo de tre e for o nivel de 3 cartas n adicionar outras cartas ate o user clikar no monte de novo.
+
+o conometro de tempo normal deve aparecer. o nivel medio n se deve ter corringa. apenas no dificil. a seed ali em baixo deve ser possivel copiatipo um texto. ou ter um botão de copair seed.
+
+o nivel 1 a retiragen de cartas n é de 3 emn 3 apenas os outros niveis
+
+PF DIVIDIR MAIS O CLASSES ESTA MUITO GRANDE
+
+
+__________________________________________________________
+
+
+copiar botão n funcioando
+na hora de pegar outra cartas no bloco de 3. tem q ficar duas cartas. e n adicionar uma 3 no fundo. dai com duas se o user clikar de novo deve se ter 1 e clikar nessa uma de deve ter 0. isso levando em conta que usei a carta ne
+
+
+
+_____________________
+ta deu um bug quando tiro a altima carta aparece uma nova carta unica la no campo de estração sendo q deveria aparecer nehuma.
+o clike duplo n esta se altocompletando como acontece no jogo tipo. clike duplo deve analizar se a carta entra pro descarte final. depois se n passar procurar a carta que encaixa nela. e se n tiver nada idsso fazer nada
+
+_________________________________
