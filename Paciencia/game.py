@@ -1,3 +1,4 @@
+# --- game.py ---
 import pygame
 import random
 import string
@@ -18,8 +19,16 @@ class Jogo:
     def __init__(self, dificuldade, seed_usuario=None):
         self.dificuldade = dificuldade
         self.start_time = pygame.time.get_ticks()
-        self.historico = [] # Pilha para armazenar estados (Undo)
+        self.historico = [] 
         
+        # --- CONFIGURAÇÃO DE REGRAS ---
+        # Nível 1 (Fácil) e 2 (Médio): Clique Duplo ATIVO
+        if self.dificuldade in [1, 2]:
+            CONFIG["clique_duplo"] = True
+        else:
+            # Nível 3 (Difícil Lvl 1) em diante: Clique Duplo DESATIVADO
+            CONFIG["clique_duplo"] = False
+
         self.cartas_para_virar = 1 if dificuldade == 1 else 3
         self.visiveis_no_descarte = 0
         
@@ -59,7 +68,6 @@ class Jogo:
         self.relatorio_gerado = False
 
     def salvar_estado(self):
-        """Salva o estado atual do jogo para permitir o Undo (Z)."""
         estado = {
             'mesa': copy.deepcopy(self.pilhas_mesa),
             'finais': copy.deepcopy(self.pilhas_finais),
@@ -73,7 +81,6 @@ class Jogo:
             self.historico.pop(0)
 
     def desfazer(self):
-        """Reverte para o último estado salvo."""
         if not self.historico:
             return
 
@@ -225,21 +232,15 @@ class Jogo:
         return False
 
     def _remover_da_origem_obj(self, carta):
-        """Remove carta e ajusta visibilidade do descarte corretamente."""
         if carta in self.monte_descarte: 
             self.monte_descarte.remove(carta)
             
-            # --- CORREÇÃO DO BUG DO DESCARTE ---
             if self.visiveis_no_descarte > 1:
-                # Se tem 2 ou 3 cartas visíveis, apenas diminui 1
                 self.visiveis_no_descarte -= 1
             else:
-                # Se só tinha 1 visível e removemos ela:
                 if len(self.monte_descarte) > 0:
-                    # Se ainda há cartas escondidas atrás, mostre as próximas 3 (ou quantas tiver)
                     self.visiveis_no_descarte = min(len(self.monte_descarte), 3)
                 else:
-                    # Acabou tudo
                     self.visiveis_no_descarte = 0
             return 
 
@@ -263,7 +264,6 @@ class Jogo:
 
         if c in self.monte_descarte:
             self.monte_descarte.remove(c)
-            # Mesma lógica de correção para grupos
             if self.visiveis_no_descarte > 1:
                 self.visiveis_no_descarte -= 1
             else:
@@ -305,14 +305,11 @@ class Jogo:
                     pos = evento.pos
                     agora = pygame.time.get_ticks()
 
-                    # --- BOTÃO COPIAR ---
                     btn_copiar_rect = pygame.Rect(LARGURA_TELA - 100, ALTURA_TELA - 32, 80, 26)
                     if btn_copiar_rect.collidepoint(pos):
                         self.copiar_seed(); return
 
-                    # --- CLIQUE NO BARALHO (COMPRA) ---
                     if pygame.Rect(50, 50, LARGURA_CARTA, ALTURA_CARTA).collidepoint(pos):
-                        # --- CORREÇÃO: TRAVA O CLIQUE SE ESTIVER ANIMANDO ---
                         if self.fila_animacao_compra: 
                             return
 
@@ -320,12 +317,10 @@ class Jogo:
                         self.joker.reset_timer()
                         
                         if self.monte_compra:
-                            # 1. Captura quem está visível AGORA
                             cartas_visiveis_agora = []
                             if self.visiveis_no_descarte > 0 and self.monte_descarte:
                                 cartas_visiveis_agora = self.monte_descarte[-self.visiveis_no_descarte:]
 
-                            # 2. Realiza a compra lógica
                             qtd_compra = min(self.cartas_para_virar, len(self.monte_compra))
                             novas_cartas = []
                             for _ in range(qtd_compra):
@@ -333,12 +328,10 @@ class Jogo:
                                 self.monte_descarte.append(c)
                                 novas_cartas.append(c)
 
-                            # 3. Define quem ficará visível no FUTURO
                             total_no_descarte = len(self.monte_descarte)
                             self.visiveis_no_descarte = min(total_no_descarte, 3)
                             cartas_visiveis_futuro = self.monte_descarte[-self.visiveis_no_descarte:]
                             
-                            # 4. Anima as cartas antigas (Shift para a esquerda)
                             for c in cartas_visiveis_agora:
                                 if c in cartas_visiveis_futuro:
                                     idx_novo = cartas_visiveis_futuro.index(c)
@@ -347,7 +340,6 @@ class Jogo:
                                 else:
                                     c.animar_para(180, 50, velocidade=0.1)
 
-                            # 5. Configura animação das novas cartas
                             self.fila_animacao_compra = [] 
                             self.timer_animacao_compra = agora + 50 
                             
@@ -361,7 +353,6 @@ class Jogo:
                                 self.fila_animacao_compra.append((c, dest_x, 50))
 
                         else:
-                            # --- RECICLAGEM ---
                             self.monte_compra = self.monte_descarte[::-1]
                             self.monte_descarte = []
                             self.visiveis_no_descarte = 0 
@@ -372,7 +363,6 @@ class Jogo:
                                 c.animar_para(50, 50, velocidade=0.2) 
                         return
 
-                    # --- SELEÇÃO DE CARTAS (Mesa, Descarte, Fundação) ---
                     carta_clicada = None; origem = None; idx = None
                     
                     if self.monte_descarte and self.visiveis_no_descarte > 0:
@@ -433,7 +423,6 @@ class Jogo:
         cabeça = self.carta_selecionada[0]
         moveu = False
         
-        # Lógica para Fundações
         if len(self.carta_selecionada) == 1:
             for i in range(4):
                 if cabeça.rect.colliderect(RegrasPaciencia.get_rect_fundacao(i)):
@@ -451,7 +440,6 @@ class Jogo:
                             pilha.append(cabeça); moveu = True
                     break
         
-        # Lógica para Mesa
         start_x = (LARGURA_TELA - (7 * (LARGURA_CARTA + ESPACO_CARTAS))) // 2
         if not moveu:
             for i in range(7):
@@ -480,7 +468,6 @@ class Jogo:
                         pilha_dest.append(c)
                     moveu = True; break
         
-        # Se não moveu, volta pra origem
         if not moveu:
              for c in self.carta_selecionada: 
                  c.arrastando = False

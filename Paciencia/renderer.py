@@ -1,3 +1,4 @@
+# --- renderer.py ---
 import pygame
 from config import *
 from assets import *
@@ -82,8 +83,6 @@ class GameRenderer:
             self.tela.blit(t, t.get_rect(center=rect.center))
             
             if pilha:
-                # CORREÇÃO VISUAL: Se tiver mais de uma carta, desenha a penúltima
-                # para que quando a última estiver voando ou arrastando, a de baixo apareça.
                 if len(pilha) > 1:
                     pilha[-2].desenhar(self.tela)
                 pilha[-1].desenhar(self.tela)
@@ -95,11 +94,14 @@ class GameRenderer:
 
     def _desenhar_ui_inferior(self, jogo):
         # --- LADO ESQUERDO: Comandos ---
-        txt_comandos = FONTE_PEQUENA.render("Z: Desfazer | R: Reiniciar", True, (200, 200, 200))
+        msg_comandos = "Z: Desfazer | R: Reiniciar"
+        if CONFIG.get("clique_duplo", False):
+            msg_comandos += " | Clique Duplo: ON"
+            
+        txt_comandos = FONTE_PEQUENA.render(msg_comandos, True, (200, 200, 200))
         self.tela.blit(txt_comandos, (20, ALTURA_TELA - 30))
 
         # --- LADO DIREITO: Seed e Botão Copiar ---
-        # 1. Definição do Botão (Fixo)
         btn_largura = 80
         btn_altura = 26
         margem_direita = 20
@@ -108,12 +110,10 @@ class GameRenderer:
         x_btn = LARGURA_TELA - btn_largura - margem_direita
         rect_btn = pygame.Rect(x_btn, y_pos, btn_largura, btn_altura)
         
-        # 2. Texto da Seed (à esquerda do botão)
         txt_seed = FONTE_PEQUENA.render(f"Seed: {jogo.seed}", True, COR_AMARELA)
-        x_seed = x_btn - txt_seed.get_width() - 15 # 15px de espaço
+        x_seed = x_btn - txt_seed.get_width() - 15 
         self.tela.blit(txt_seed, (x_seed, y_pos + 4))
 
-        # 3. Desenhar o Botão
         mouse_pos = pygame.mouse.get_pos()
         hover = rect_btn.collidepoint(mouse_pos)
         cor_bg = COR_BOTAO_HOVER if hover else COR_BOTAO
@@ -125,12 +125,10 @@ class GameRenderer:
         txt_rect = lbl_cpy.get_rect(center=rect_btn.center)
         self.tela.blit(lbl_cpy, txt_rect)
 
-        # 4. Feedback de Cópia
         if jogo.feedback_copia:
             agora = pygame.time.get_ticks()
             if agora - jogo.feedback_timer < 2000:
                 txt_ok = FONTE_PEQUENA.render("COPIADO!", True, (0, 255, 0))
-                # Mostra acima do botão para não atrapalhar
                 self.tela.blit(txt_ok, (x_btn + 5, y_pos - 20))
             else:
                 jogo.feedback_copia = False

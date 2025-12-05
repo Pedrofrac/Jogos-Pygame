@@ -1,3 +1,4 @@
+# --- main.py ---
 import pygame
 import sys
 from config import *
@@ -22,53 +23,8 @@ def desenhar_botao(superficie, texto, rect, hover):
     txt_rect = txt_surf.get_rect(center=rect.center)
     superficie.blit(txt_surf, txt_rect)
 
-def desenhar_checkbox(superficie, texto, rect, checked, hover):
-    pygame.draw.rect(superficie, COR_CHECKBOX if hover else COR_BRANCA, rect, 2)
-    if checked: pygame.draw.rect(superficie, COR_AMARELA, (rect.x+4, rect.y+4, rect.width-8, rect.height-8))
-    t = FONTE.render(texto, True, COR_BRANCA)
-    superficie.blit(t, (rect.right + 15, rect.y + 5))
-
-def tela_instrucoes():
-    """Exibe a tela de instruções"""
-    while True:
-        TELA.fill(COR_CINZA_ESCURO)
-        titulo = FONTE_GRANDE.render("INSTRUÇÕES & COMANDOS", True, COR_AMARELA)
-        TELA.blit(titulo, (LARGURA_TELA//2 - titulo.get_width()//2, 50))
-        
-        linhas = [
-            "OBJETIVO: Mover todas as cartas para as 4 pilhas finais.",
-            "",
-            "CONTROLES:",
-            "- Arrastar e Soltar: Move cartas.",
-            "- Clique no Baralho: Compra cartas.",
-            "- Clique Duplo: Movimento automático.",
-            "- Tecla Z: Desfazer jogada.",
-            "- Tecla R: Reiniciar jogo.",
-            "",
-            "O CORINGA (Nível Difícil):",
-            "Mova uma carta antes que o tempo acabe ou Game Over!"
-        ]
-        
-        y = 150
-        for linha in linhas:
-            cor = COR_AMARELA if "OBJETIVO" in linha or "CONTROLES" in linha or "CORINGA" in linha else COR_BRANCA
-            fonte = FONTE_MENU if cor == COR_AMARELA else FONTE
-            txt = fonte.render(linha, True, cor)
-            TELA.blit(txt, (LARGURA_TELA//2 - txt.get_width()//2, y))
-            y += 35
-
-        btn_voltar = pygame.Rect(LARGURA_TELA//2 - 100, ALTURA_TELA - 100, 200, 50)
-        mouse_pos = pygame.mouse.get_pos()
-        desenhar_botao(TELA, "VOLTAR", btn_voltar, btn_voltar.collidepoint(mouse_pos))
-
-        for evento in pygame.event.get():
-            if evento.type == pygame.QUIT: pygame.quit(); sys.exit()
-            if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
-                if btn_voltar.collidepoint(evento.pos): return
-        pygame.display.flip()
-
 def menu_principal():
-    carregar_imagens()
+    carregar_imagens() 
     largura_btn, altura_btn = 400, 60
     x_centro = LARGURA_TELA // 2 - largura_btn // 2
     
@@ -76,7 +32,8 @@ def menu_principal():
     seed_texto = ""
     input_box = pygame.Rect(x_centro, 150, largura_btn, 40)
     ativo_input = False
-    rect_check = pygame.Rect(x_centro, 680, 30, 30)
+    
+    # Checkbox removido daqui
 
     while True:
         TELA.fill(COR_FUNDO)
@@ -119,39 +76,25 @@ def menu_principal():
             # Botão de Tema
             btn_tema = pygame.Rect(x_centro, start_y + 3*espaco, largura_btn - 80, altura_btn)
             
-            # Checkbox
-            h_chk = rect_check.collidepoint(mouse_pos)
-            desenhar_checkbox(TELA, "Habilitar Clique Duplo", rect_check, CONFIG["clique_duplo"], h_chk)
-            if h_chk and clique: CONFIG["clique_duplo"] = not CONFIG["clique_duplo"]
-
             desenhar_botao(TELA, "FÁCIL (Começar)", btn_facil, btn_facil.collidepoint(mouse_pos))
             desenhar_botao(TELA, "MÉDIO (Começar)", btn_medio, btn_medio.collidepoint(mouse_pos))
             desenhar_botao(TELA, "DIFÍCIL (Seleção)", btn_dificil, btn_dificil.collidepoint(mouse_pos))
             desenhar_botao(TELA, "TEMA CARTAS", btn_tema, btn_tema.collidepoint(mouse_pos))
             
-            # Miniatura da carta ao lado do botão Tema
+            # Miniatura da carta
             if 'verso' in IMAGENS_CARTAS:
-                # Escala pequena para caber no menu
                 mini = pygame.transform.smoothscale(IMAGENS_CARTAS['verso'], (int(LARGURA_CARTA*0.4), int(ALTURA_CARTA*0.4)))
                 rect_mini = mini.get_rect(midleft=(btn_tema.right + 20, btn_tema.centery))
                 TELA.blit(mini, rect_mini)
                 pygame.draw.rect(TELA, COR_BRANCA, rect_mini, 2)
-
-            # Botão de Instruções (Movido para baixo)
-            btn_instr = pygame.Rect(x_centro + largura_btn + 20, start_y, 160, 60)
-            # Ou podemos colocar em outro lugar, mas vou deixar o link no clique
-            # para simplificar, adicionei o clique no Dificil que leva para seleção
 
             if clique:
                 if btn_facil.collidepoint(mouse_pos): return 1, seed_texto
                 if btn_medio.collidepoint(mouse_pos): return 2, seed_texto
                 if btn_dificil.collidepoint(mouse_pos): estado_menu = 1
                 
-                # Lógica de Troca de Tema
                 if btn_tema.collidepoint(mouse_pos):
                     CONFIG["indice_verso"] += 1
-                    if CONFIG["indice_verso"] >= len(LISTA_VERSOS):
-                        CONFIG["indice_verso"] = 0
                     atualizar_verso_atual()
 
         elif estado_menu == 1:
@@ -160,10 +103,12 @@ def menu_principal():
             for i in range(5):
                 r = pygame.Rect(x_centro, 260 + i * 70, largura_btn, 60)
                 txt = f"NÍVEL {i+1}"
-                if i==0: txt+=" (Normal)"
+                if i==0: txt+=" (Sem Coringa)"
                 elif i==4: txt+=" (Insano)"
                 desenhar_botao(TELA, txt, r, r.collidepoint(mouse_pos))
-                if r.collidepoint(mouse_pos) and clique: return 3, seed_texto
+                # Retorna 3 + i para diferenciar os níveis
+                # Nível 1 do menu difícil (i=0) -> Retorna 3 (Sem ajuda, sem coringa)
+                if r.collidepoint(mouse_pos) and clique: return 3 + i, seed_texto
             
             r_volt = pygame.Rect(x_centro, 650, largura_btn, altura_btn)
             desenhar_botao(TELA, "VOLTAR", r_volt, r_volt.collidepoint(mouse_pos))
@@ -182,11 +127,19 @@ def main():
             eventos = pygame.event.get()
             for ev in eventos:
                 if ev.type == pygame.QUIT:
-                    jogo.gerar_relatorio("ABANDONO (Fechou)")
+                    if jogo.vitoria:
+                        jogo.gerar_relatorio("VITORIA")
+                    else:
+                        jogo.gerar_relatorio("ABANDONO (Fechou)")
                     pygame.quit(); sys.exit()
+                
                 if ev.type == pygame.KEYDOWN and ev.key == pygame.K_r:
-                    jogo.gerar_relatorio("ABANDONO (Reiniciou)")
+                    if jogo.vitoria:
+                        jogo.gerar_relatorio("VITORIA")
+                    else:
+                        jogo.gerar_relatorio("ABANDONO (Reiniciou)")
                     rodando = False
+
             jogo.input(eventos)
             jogo.loop()
             renderer.desenhar_jogo(jogo)

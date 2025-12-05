@@ -1,3 +1,4 @@
+# --- joker_system.py ---
 import pygame
 from config import *
 from assets import FONTE
@@ -8,13 +9,16 @@ class SistemaCoringa:
         self.dificuldade = dificuldade
         self.ativo = False
         
-        # Nivel 1 e 2 = SEM Coringa (Garantido)
-        if dificuldade <= 2:
+        # Nivel 1 (Fácil) e 2 (Médio) = SEM Coringa
+        # Nível 3 (Difícil 1) = SEM Coringa (apenas difícil sem features)
+        # Nível 4+ = COM Coringa
+        if dificuldade <= 3:
             self.habilitado = False
         else:
             self.habilitado = True
             
-        tempos = {3: (10000, 8000), 4: (6000, 5000), 5: (4000, 4000)}
+        # Mapeia tempo do coringa a partir do nível 4
+        tempos = {4: (10000, 8000), 5: (8000, 6000), 6: (6000, 5000), 7: (4000, 4000)}
         cfg = tempos.get(dificuldade, (10000, 8000))
         self.tempo_para_aparecer = cfg[0]
         self.tempo_de_vida = cfg[1]
