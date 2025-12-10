@@ -8,7 +8,6 @@ from config import *
 from assets import *
 from card import Carta
 from solitaire_rules import RegrasPaciencia
-from joker_system import SistemaCoringa
 
 try:
     import tkinter as tk
@@ -22,12 +21,14 @@ class Jogo:
         self.historico = [] 
         
         # --- CONFIGURAÇÃO DE REGRAS ---
-        if self.dificuldade in [1, 2]:
+        # 1 = Fácil (1 carta), 2 = Médio (3 cartas)
+        if self.dificuldade == 1:
             CONFIG["clique_duplo"] = True
+            self.cartas_para_virar = 1
         else:
-            CONFIG["clique_duplo"] = False
+            CONFIG["clique_duplo"] = True
+            self.cartas_para_virar = 3
 
-        self.cartas_para_virar = 1 if dificuldade == 1 else 3
         self.visiveis_no_descarte = 0
         
         if seed_usuario and seed_usuario.strip() != "":
@@ -54,7 +55,6 @@ class Jogo:
         
         self._preparar_distribuicao()
         
-        self.joker = SistemaCoringa(dificuldade)
         self.carta_selecionada = None 
         self.origem_selecao = None 
         self.index_origem = None 
@@ -66,7 +66,6 @@ class Jogo:
         self.relatorio_gerado = False
 
     def salvar_estado(self):
-        # deepcopy salva exatamente a posição (x,y) daquele momento
         estado = {
             'mesa': copy.deepcopy(self.pilhas_mesa),
             'finais': copy.deepcopy(self.pilhas_finais),
@@ -83,8 +82,6 @@ class Jogo:
         if not self.historico:
             return
 
-        # 1. MAPEAMENTO VISUAL: Guardar onde as cartas estão AGORA na tela.
-        # Isso impede o "teletransporte" ou o "pulo" lateral.
         posicoes_visuais = {}
         todas_listas_atuais = [self.monte_compra, self.monte_descarte] + self.pilhas_mesa + self.pilhas_finais
         for lista in todas_listas_atuais:
@@ -92,7 +89,6 @@ class Jogo:
                 chave = f"{c.naipe}_{c.valor}"
                 posicoes_visuais[chave] = (c.x_float, c.y_float)
 
-        # 2. RESTAURAÇÃO DO ESTADO (Lógica)
         estado = self.historico.pop()
         
         self.pilhas_mesa = estado['mesa']
@@ -101,66 +97,50 @@ class Jogo:
         self.monte_descarte = estado['descarte']
         self.visiveis_no_descarte = estado['visiveis']
         
-        # 3. SINCRONIA E RE-ANIMAÇÃO
-        # Aplicamos a posição visual antiga nas cartas restauradas
         todas_listas_restauradas = [self.monte_compra, self.monte_descarte] + self.pilhas_mesa + self.pilhas_finais
         
         for lista in todas_listas_restauradas:
             for c in lista:
                 chave = f"{c.naipe}_{c.valor}"
                 if chave in posicoes_visuais:
-                    # A carta restaurada assume a posição visual da carta que estava na tela
                     x_antigo, y_antigo = posicoes_visuais[chave]
                     c.set_pos(x_antigo, y_antigo)
                 
-                # Reseta estados de arrasto para evitar bugs
                 c.arrastando = False
                 c.em_animacao = False
         
-        # 4. FORÇAR ALINHAMENTO (Animação suave de volta para o lugar correto)
-        self.update_posicoes_mesa() # Arruma a mesa
-        self._alinhar_finais()      # Arruma as fundações
-        self._alinhar_descarte()    # Arruma o descarte
-        self._alinhar_compra()      # Arruma o monte de compra
+        self.update_posicoes_mesa() 
+        self._alinhar_finais()      
+        self._alinhar_descarte()    
+        self._alinhar_compra()      
 
-        # Limpa filas de animação pendentes
         self.fila_animacao_compra = []
         self.cartas_colapsando = []
         self.carta_selecionada = None
-        
-        self.joker.reset_timer()
 
-    # --- NOVOS MÉTODOS DE ALINHAMENTO PARA O UNDO ---
     def _alinhar_finais(self):
-        """Garante que as cartas nas fundações voltem para o lugar certo suavemente"""
         for i, pilha in enumerate(self.pilhas_finais):
             rect = RegrasPaciencia.get_rect_fundacao(i)
             for c in pilha:
                 c.animar_para(rect.x, rect.y, velocidade=0.2)
 
     def _alinhar_descarte(self):
-        """Recalcula o leque do descarte e anima"""
         if not self.monte_descarte: return
         total = len(self.monte_descarte)
-        # Recalcula quantas mostrar baseado no estado restaurado
         visiveis = self.visiveis_no_descarte
         inicio_leque = max(0, total - visiveis)
         x_base = 180
         
         for i, c in enumerate(self.monte_descarte):
             if i < inicio_leque:
-                # Escondidas sob o monte
                 c.animar_para(x_base, 50, velocidade=0.2)
             else:
-                # No leque visível
                 offset = i - inicio_leque
                 c.animar_para(x_base + (offset * 25), 50, velocidade=0.2)
 
     def _alinhar_compra(self):
-        """Manda o monte de compra para a posição inicial"""
         for c in self.monte_compra:
             c.animar_para(50, 50, velocidade=0.2)
-    # -----------------------------------------------------
 
     def _criar_baralho(self):
         cartas = [Carta(v, n) for n in NAIPES for v in VALORES]
@@ -228,7 +208,6 @@ class Jogo:
             for j, c in enumerate(pilha):
                 if not c.arrastando:
                     c.animar_para(x, 220 + j * OFFSET_Y_CARTA, velocidade=0.2)
-                    # Atualiza pos_original para o próximo drag ser correto
                     c.pos_original = (x, 220 + j * OFFSET_Y_CARTA)
 
     def tentar_movimento_automatico(self, carta):
@@ -250,7 +229,6 @@ class Jogo:
             self.pilhas_finais[idx].append(carta)
             self._remover_da_origem_obj(carta)
             carta.animar_para(rect_f.x, rect_f.y, velocidade=0.2)
-            self.joker.reset_timer()
             return True
         
         grupo_cartas = [carta]
@@ -292,7 +270,6 @@ class Jogo:
                     c.arrastando = False
                     c.animar_para(dest_x, dest_y + (i * OFFSET_Y_CARTA), velocidade=0.2)
                     pilha_destino.append(c)
-                self.joker.reset_timer()
                 return True
         return False
 
@@ -362,7 +339,7 @@ class Jogo:
             except: pass
 
     def input(self, eventos):
-        if self.joker.game_over or self.vitoria: return
+        if self.vitoria: return
 
         for evento in eventos:
             if evento.type == pygame.MOUSEBUTTONDOWN:
@@ -379,7 +356,6 @@ class Jogo:
                             return
 
                         self.salvar_estado() 
-                        self.joker.reset_timer()
                         
                         if self.monte_compra:
                             cartas_visiveis_agora = []
@@ -453,7 +429,6 @@ class Jogo:
                                     self.ultima_carta_clicada = None; self.update_posicoes_mesa(); return
 
                         self.ultima_carta_clicada = carta_clicada; self.ultimo_clique_time = agora
-                        self.joker.reset_timer()
                         
                         if origem == 'mesa':
                             ic = self.pilhas_mesa[idx].index(carta_clicada)
@@ -543,6 +518,5 @@ class Jogo:
         self.update_animacao_compra()
         self.update_colapso()
         self.update_cartas()
-        self.joker.update(self.monte_descarte, self.pilhas_mesa, self.pilhas_finais)
         if sum(len(p) for p in self.pilhas_finais) == 52:
             self.vitoria = True
