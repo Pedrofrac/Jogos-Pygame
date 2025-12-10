@@ -12,7 +12,7 @@ except ImportError:
     tk = None
 
 TELA = pygame.display.set_mode((LARGURA_TELA, ALTURA_TELA))
-pygame.display.set_caption("Paciência - A Vingança do Coringa")
+pygame.display.set_caption("Paciência Clássica")
 CLOCK = pygame.time.Clock()
 
 def desenhar_botao(superficie, texto, rect, hover):
@@ -28,16 +28,13 @@ def menu_principal():
     largura_btn, altura_btn = 400, 60
     x_centro = LARGURA_TELA // 2 - largura_btn // 2
     
-    estado_menu = 0
     seed_texto = ""
     input_box = pygame.Rect(x_centro, 150, largura_btn, 40)
     ativo_input = False
     
-    # Checkbox removido daqui
-
     while True:
         TELA.fill(COR_FUNDO)
-        t = FONTE_GRANDE.render("PACIÊNCIA VS CORINGA", True, COR_AMARELA)
+        t = FONTE_GRANDE.render("PACIÊNCIA CLÁSSICA", True, COR_AMARELA)
         TELA.blit(t, (LARGURA_TELA//2 - t.get_width()//2, 50))
 
         mouse_pos = pygame.mouse.get_pos(); clique = False
@@ -68,51 +65,31 @@ def menu_principal():
         TELA.blit(t_txt, (input_box.x + 10, input_box.y + 10))
 
         start_y = 230; espaco = 75
-        if estado_menu == 0:
-            btn_facil = pygame.Rect(x_centro, start_y, largura_btn, altura_btn)
-            btn_medio = pygame.Rect(x_centro, start_y + espaco, largura_btn, altura_btn)
-            btn_dificil = pygame.Rect(x_centro, start_y + 2*espaco, largura_btn, altura_btn)
-            
-            # Botão de Tema
-            btn_tema = pygame.Rect(x_centro, start_y + 3*espaco, largura_btn - 80, altura_btn)
-            
-            desenhar_botao(TELA, "FÁCIL (Começar)", btn_facil, btn_facil.collidepoint(mouse_pos))
-            desenhar_botao(TELA, "MÉDIO (Começar)", btn_medio, btn_medio.collidepoint(mouse_pos))
-            desenhar_botao(TELA, "DIFÍCIL (Seleção)", btn_dificil, btn_dificil.collidepoint(mouse_pos))
-            desenhar_botao(TELA, "TEMA CARTAS", btn_tema, btn_tema.collidepoint(mouse_pos))
-            
-            # Miniatura da carta
-            if 'verso' in IMAGENS_CARTAS:
-                mini = pygame.transform.smoothscale(IMAGENS_CARTAS['verso'], (int(LARGURA_CARTA*0.4), int(ALTURA_CARTA*0.4)))
-                rect_mini = mini.get_rect(midleft=(btn_tema.right + 20, btn_tema.centery))
-                TELA.blit(mini, rect_mini)
-                pygame.draw.rect(TELA, COR_BRANCA, rect_mini, 2)
+        
+        btn_facil = pygame.Rect(x_centro, start_y, largura_btn, altura_btn)
+        btn_medio = pygame.Rect(x_centro, start_y + espaco, largura_btn, altura_btn)
+        
+        # Botão de Tema
+        btn_tema = pygame.Rect(x_centro, start_y + 2*espaco, largura_btn - 80, altura_btn)
+        
+        desenhar_botao(TELA, "FÁCIL (1 Carta)", btn_facil, btn_facil.collidepoint(mouse_pos))
+        desenhar_botao(TELA, "MÉDIO (3 Cartas)", btn_medio, btn_medio.collidepoint(mouse_pos))
+        desenhar_botao(TELA, "TEMA CARTAS", btn_tema, btn_tema.collidepoint(mouse_pos))
+        
+        # Miniatura da carta
+        if 'verso' in IMAGENS_CARTAS:
+            mini = pygame.transform.smoothscale(IMAGENS_CARTAS['verso'], (int(LARGURA_CARTA*0.4), int(ALTURA_CARTA*0.4)))
+            rect_mini = mini.get_rect(midleft=(btn_tema.right + 20, btn_tema.centery))
+            TELA.blit(mini, rect_mini)
+            pygame.draw.rect(TELA, COR_BRANCA, rect_mini, 2)
 
-            if clique:
-                if btn_facil.collidepoint(mouse_pos): return 1, seed_texto
-                if btn_medio.collidepoint(mouse_pos): return 2, seed_texto
-                if btn_dificil.collidepoint(mouse_pos): estado_menu = 1
-                
-                if btn_tema.collidepoint(mouse_pos):
-                    CONFIG["indice_verso"] += 1
-                    atualizar_verso_atual()
-
-        elif estado_menu == 1:
-            t_sub = FONTE.render("SELECIONE O NÍVEL DO DESAFIO:", True, COR_AMARELA)
-            TELA.blit(t_sub, (LARGURA_TELA//2 - t_sub.get_width()//2, 220))
-            for i in range(5):
-                r = pygame.Rect(x_centro, 260 + i * 70, largura_btn, 60)
-                txt = f"NÍVEL {i+1}"
-                if i==0: txt+=" (Sem Coringa)"
-                elif i==4: txt+=" (Insano)"
-                desenhar_botao(TELA, txt, r, r.collidepoint(mouse_pos))
-                # Retorna 3 + i para diferenciar os níveis
-                # Nível 1 do menu difícil (i=0) -> Retorna 3 (Sem ajuda, sem coringa)
-                if r.collidepoint(mouse_pos) and clique: return 3 + i, seed_texto
+        if clique:
+            if btn_facil.collidepoint(mouse_pos): return 1, seed_texto
+            if btn_medio.collidepoint(mouse_pos): return 2, seed_texto
             
-            r_volt = pygame.Rect(x_centro, 650, largura_btn, altura_btn)
-            desenhar_botao(TELA, "VOLTAR", r_volt, r_volt.collidepoint(mouse_pos))
-            if r_volt.collidepoint(mouse_pos) and clique: estado_menu = 0
+            if btn_tema.collidepoint(mouse_pos):
+                CONFIG["indice_verso"] += 1
+                atualizar_verso_atual()
 
         pygame.display.flip()
 
