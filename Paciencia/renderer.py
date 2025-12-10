@@ -26,10 +26,8 @@ class GameRenderer:
             for c in jogo.carta_selecionada: c.desenhar(self.tela)
 
         self._desenhar_ui_inferior(jogo)
-        self._desenhar_coringa_ui(jogo.joker)
 
-        if jogo.joker.game_over: self._desenhar_overlay("GAME OVER", COR_VERMELHA)
-        elif jogo.vitoria: self._desenhar_overlay("VITORIA!", COR_AMARELA)
+        if jogo.vitoria: self._desenhar_overlay("VITORIA!", COR_AMARELA)
 
     def _desenhar_cronometro(self, start_time):
         segundos = (pygame.time.get_ticks() - start_time) // 1000
@@ -132,10 +130,6 @@ class GameRenderer:
                 self.tela.blit(txt_ok, (x_btn + 5, y_pos - 20))
             else:
                 jogo.feedback_copia = False
-
-    def _desenhar_coringa_ui(self, joker):
-        if not joker.habilitado or joker.game_over: return
-        joker.desenhar_barra(self.tela)
 
     def _desenhar_overlay(self, texto, cor):
         overlay = pygame.Surface((LARGURA_TELA, ALTURA_TELA)); overlay.set_alpha(200)
