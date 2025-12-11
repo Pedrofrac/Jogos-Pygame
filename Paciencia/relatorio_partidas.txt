@@ -1,0 +1,10 @@
+Data: 10/12/2025 20:17:15 | Seed: PLYBTG | Nivel: 1 | Res: ABANDONO (Fechou)
+Data: 10/12/2025 20:51:08 | Seed: JRG2NV | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 20:54:35 | Seed: SL1BEA | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 20:56:22 | Seed: NP1HXD | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 21:00:41 | Seed: 9JMSR3 | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 21:02:46 | Seed: ODAAQ4 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 21:10:13 | Seed: ELW0V6 | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 21:12:14 | Seed: ELW0V6 | Nivel: 1 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 21:14:43 | Seed: ELW0V6 | Nivel: 2 | Res: ABANDONO (Reiniciou)
+Data: 10/12/2025 21:17:58 | Seed: ELW0V6 | Nivel: 2 | Res: VITORIA
